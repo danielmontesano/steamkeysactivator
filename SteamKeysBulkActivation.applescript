@@ -20,12 +20,12 @@
 -- Required to run from the command line:
 tell application "System Events"
 	set steam_application to application "/Applications/Steam.app"
-
+	
 	repeat
 		-- Load page from browser
 		set user_browser to my GetUserBrowser()
 		set page_contents to my GetPageContents(user_browser)
-
+		
 		-- Search for the Steam Keys in the page content
 		set steam_keys to {}
 		repeat with possible_key in paragraphs of page_contents
@@ -48,7 +48,7 @@ tell application "System Events"
 				end if
 			end if
 		end repeat
-
+		
 		-- Making sure keys are loaded
 		if steam_keys's length is 0 then
 			display dialog "This application will read Steam keys from a web page and will activate them one by one.
@@ -59,12 +59,12 @@ Please, make sure correct site's page is loaded and keys are visible." with titl
 			exit repeat
 		end if
 	end repeat
-
+	
 	-- Starting Steam and asking user for confirmation
 	activate steam_application
 	set AppleScript's text item delimiters to "
 "
-	display dialog ("Ready to activate next Steam keys:
+	display dialog ("Ready to activate next " & (count of steam_keys) & " Steam keys:
 " & steam_keys as string) & "
 
 After activation process is started it's recommended to not to touch you Mac until its is finished." with title "Loading Steam keys" buttons {"Cancel", "I promise to not to touch my Mac"}
@@ -93,25 +93,25 @@ After activation process is started it's recommended to not to touch you Mac unt
 		end tell
 		my SmallDelay()
 	end repeat
-
+	
 	set failed_steam_keys to {}
-
+	
 	-- Entering all the keys gathered
 	repeat with steam_key in steam_keys
 		tell process "Steam"
 			-- Close all opened windows
 			my SmallDelay()
 			repeat
-				set window_menu_size to count of menu items of menus of menu bar item "Window" of menu bars
-				click menu item "Close" of menus of menu bar item "Window" of menu bars
+				set window_menu_size to count of menu items of menus of menu bar item "Ventana" of menu bars
+				click menu item "Close" of menus of menu bar item "Ventana" of menu bars
 				delay 1
-				if window_menu_size is equal to (count of menu items of menus of menu bar item "Window" of menu bars) then
+				if window_menu_size is equal to (count of menu items of menus of menu bar item "Ventana" of menu bars) then
 					-- closing until everythin is closed
 					exit repeat
 				end if
 			end repeat
 			-- Click "Activate" in menu
-			click menu item "Activate a Product on Steam..." of menus of menu bar item "Games" of menu bars
+			click menu item "Activar un producto en Steam..." of menus of menu bar item "Juegos" of menu bars
 			-- Go to product code activation page
 			my BigDelay()
 			keystroke return
@@ -130,6 +130,12 @@ After activation process is started it's recommended to not to touch you Mac unt
 			my SmallDelay()
 			key up command
 			my SmallDelay()
+			keystroke return
+			my BigDelay()
+			keystroke return
+			my BigDelay()
+			click menu item "Close" of menus of menu bar item "Ventana" of menu bars
+			delay 1
 			-- OK'ing all requests until window is closed
 			set successes to 0
 			-- provides some guaranties against data races
@@ -167,18 +173,18 @@ But usually that's expected as you can not install Windows games on a Mac." with
 end tell
 
 on BigDelay()
-	delay 2
+	delay 1
 end BigDelay
 
 on SmallDelay()
-	delay 0.5
+	delay 0.2
 end SmallDelay
 
 on GetUserBrowser()
 	tell application "SystemUIServer"
 		set available_browsers to {"Safari", "Google Chrome"}
 		set default_browser to (name of my GetDefaultBrowser())
-
+		
 		if my ApplicationIsRunning(default_browser) and available_browsers contains default_browser then
 			return default_browser
 		else
@@ -188,7 +194,7 @@ on GetUserBrowser()
 					set running_browsers to running_browsers & browser
 				end if
 			end repeat
-
+			
 			set num_running to count of running_browsers
 			if num_running is equal to 0 then
 				-- This is bad, defaulting to catch-all case
@@ -205,10 +211,10 @@ end GetUserBrowser
 on GetPageContents(user_browser)
 	if user_browser is equal to "Safari" then
 		tell application user_browser to set page_contents to the text of document 1
-	else if user_browser is equal to "Google Chrome" then
-		tell application "Google Chrome" to tell active tab of window 1
-			set page_contents to execute javascript "document.body.innerText"
-		end tell
+		--	else if user_browser is equal to "Google Chrome" then
+		--		tell application "Google Chrome" to tell active tab of window 1
+		--			set page_contents to execute javascript "document.body.innerText"
+		--		end tell
 	else
 		-- We always retutn string
 		return ""
